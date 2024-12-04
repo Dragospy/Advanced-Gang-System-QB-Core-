@@ -1,0 +1,79 @@
+<html>
+<header>
+   <!-- <script src="nui://game/ui/jquery.js" type="text/javascript"></script>-->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="main.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Passion+One:wght@400;700;900&display=swap" rel="stylesheet">
+    <link href='https://fonts.googleapis.com/css?family=Jomhuria' rel='stylesheet'>
+    <link rel="stylesheet" href="main.css">
+</header>
+
+<body>
+    <div class="Main">
+        <button class="ExitButton">&#10006;</button>
+        <img class = "BG_Image"src="" alt="No_Image">
+        <div class="Garage">
+            <div class="Header">
+                <p class="Header-Text">GANG-NAME GARAGE</p>
+                <!--<input type="text" id="SearchBar" placeholder="SEARCH FOR VEHICLES..."> -->
+            </div>
+            <div class="VehicleDisplay">         
+            </div>
+        </div>
+        <div class = "CommandCenter">
+            <div class="Header">
+                <p class="Header-Text">GANG-NAME COMMAND CENTER</p>
+            </div>
+            <div class = "ScreenSelector">
+
+            </div>
+            <div class = "CommandArea">
+                <div class = "GangDetails">
+
+                </div>
+                <div class = "Garages">
+
+                </div>
+                <div class = "Storage">
+
+                </div>
+                <div class = "Members">
+
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="Creator">
+        <button class="ExitButton" id="CreatorExitButton">&#10006;</button>
+        <div class="HeaderCreator">
+            <p class="HeaderCreator-Text">GANG CREATOR</p>
+        </div>
+        <div class ="creatorInputs">
+            <div class="gangNameInput">
+                <p class="Input-Text">GANG NAME:</p>
+                <input type="text" class="creatorInput" id="gangNameInputBox">
+            </div>
+            <div class="gangLeaderID">
+                <p class="Input-Text">GANG LEADER ID:</p>
+                <input type="text" class="creatorInput" id ="leaderIDInputBox">
+            </div>
+        </div>
+        <div class="CreateInvalidInput">
+            <p class="InputInvalid-Text">INPUT INVALID</p>
+        </div>
+        <div class="ColorPicker">
+            <p class="Input-Text">GANG COLOR:</p>
+            <input type="color" id="gangInitColorPicker" value="#FFFFFF">
+        </div>
+        <button class="button" id ="gangCreate">CONFIRM</button>
+    </div>
+    <div class = "locationPlacer"> 
+        <div class="locationPlacer-Center">
+            <p class="locationPlacer-element">N/A</p>
+        </div>
+    </div>
+</body>
+
+</html>
