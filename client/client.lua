@@ -1,4 +1,9 @@
-----------------------------------------------------------Variables
+---------------------------------------------------------- NAME <--- Main Section
+----------------------NAME---------------------- <--- Sub-Section
+
+
+---------------------------------------------------------- VARIABLES
+
 local QBCore = exports['qb-core']:GetCoreObject()
 local ui = false
 local gang = nil
@@ -14,81 +19,24 @@ local uiUnavailable = false
 
 local blips = {}
 local activeBlips
-----------------------------------------------------------Variables
-----------------------------------------------------------Garages
 
-function OpenGarageUI(name,garage, image)
-    if not ui then
-        SendNUIMessage({
-            type = "ShowGarage",
-            name = name,
-            garage = garage,
-            bgImage = image,
-        })
-        SetNuiFocus(true,true)
-        ui = true   
-    end
-end
+---------------------------------------------------------- VARIABLES
+---------------------------------------------------------- GANG CREATION
 
-function SpawnVehicle(model, vehid, location, heading, garage)
-    local coords = vector4(location.x, location.y, location.z, heading)
-    local plate = "AER "..tostring(math.random(1000, 9999))
-    print(garage)
-    print(vehid)
-    DoScreenFadeOut(500)
-    while not IsScreenFadedOut() do
-        Citizen.Wait(0)
-    end
-    QBCore.Functions.TriggerCallback('QBCore:Server:SpawnVehicle', function(netId)
-        local veh = NetToVeh(netId)
-        QBCore.Functions.SetVehicleProperties(veh, gangGarages[garage].vehicles[vehid].props.vehProps)
-        TaskWarpPedIntoVehicle(PlayerPedId(), veh, -1)
-        SetEntityHeading(veh, coords.w)
-        SetVehicleNumberPlateText(veh, plate)
-        SetEntityAsMissionEntity(veh, true, true)
-        SetVehicleEngineOn(veh, true, true,false)
-        exports['LegacyFuel']:SetFuel(veh, gangGarages[garage].vehicles[vehid].props.vehProps.fuelLevel)
-        plate = QBCore.Functions.GetPlate(veh)
-        TriggerEvent("vehiclekeys:client:SetOwner",plate)
-        DoScreenFadeIn(500)
-        uiUnavailable = false    
-    end, model, coords, true)
-    return plate
-end
-
-function SaveVehicle(currentGarage)
-    local veh = GetVehiclePedIsIn(PlayerPedId(), false)
-    local props = QBCore.Functions.GetVehicleProperties(veh)
-    local r,g,b = GetVehicleCustomPrimaryColour(veh)
-    local source = GetPlayerServerId(PlayerId())
-    local plate = props.plate
-    local color = {r = r,g = g,b = b}
-    TriggerServerEvent("GangSystem:server:SaveVehicle", source, props, color, currentGarage.name, gang, plate)
-end
-
-RegisterNetEvent("GangSystem:client:DeleteVehicle")
-AddEventHandler("GangSystem:client:DeleteVehicle", function()
-    local veh = GetVehiclePedIsIn(PlayerPedId(), false)
-    SetEntityAsMissionEntity(veh, true, true)
-    DeleteVehicle(veh)
-end)
-
-RegisterCommand("addvehicle",function (source, args)
-    local model = args[1]
-    local garage = args[2]
-    local source = GetPlayerServerId(PlayerId())
-    TriggerServerEvent("GangSystem:server:AddVehicleToGarage", source, model, garage)
+----------------------COMMANDS----------------------
+RegisterCommand("CreateGang",function (source, args)
+    OpenCreatorUI()
 end, false)
 
-RegisterCommand("CreateGangGarage",function(source, args)
+RegisterCommand("CreateGangCommandCenter",function(source, args)
     local name = args[1]
-    local garageName = args[2]
     local source = GetPlayerServerId(PlayerId())
-    TriggerServerEvent("GangSystem:server:CreateGangGarage", source, name, garageName, GetEntityCoords(PlayerPedId()))
+    TriggerServerEvent("GangSystem:server:CreateGangCommandCenter", source, name, GetEntityCoords(PlayerPedId()))
 end, false)
 
-----------------------------------------------------------Garages
-----------------------------------------------------------Gang Creation
+----------------------COMMANDS----------------------
+
+----------------------METHODS----------------------
 
 function OpenCreatorUI()
     if not ui then
@@ -100,15 +48,9 @@ function OpenCreatorUI()
     end
 end
 
-RegisterCommand("CreateGang",function (source, args)
-    OpenCreatorUI()
-end, false)
+----------------------METHODS----------------------
 
-RegisterCommand("CreateGangCommandCenter",function(source, args)
-    local name = args[1]
-    local source = GetPlayerServerId(PlayerId())
-    TriggerServerEvent("GangSystem:server:CreateGangCommandCenter", source, name, GetEntityCoords(PlayerPedId()))
-end, false)
+----------------------NUI CALLBACKS----------------------
 
 RegisterNUICallback('gangCreation', function(data, cb)
     if data.action == 'checkExisting' then  
@@ -171,11 +113,90 @@ RegisterNUICallback('gangCreation', function(data, cb)
     end
 end)
 
+----------------------NUI CALLBACKS----------------------
 
+---------------------------------------------------------- GANG CREATION
+---------------------------------------------------------- GARAGES
 
-----------------------------------------------------------Gang Creation
-----------------------------------------------------------Gang Necessities
+----------------------COMMANDS--------------------------------
+RegisterCommand("addvehicle",function (source, args)
+    local model = args[1]
+    local garage = args[2]
+    local source = GetPlayerServerId(PlayerId())
+    TriggerServerEvent("GangSystem:server:AddVehicleToGarage", source, model, garage)
+end, false)
 
+RegisterCommand("CreateGangGarage",function(source, args)
+    local name = args[1]
+    local garageName = args[2]
+    local source = GetPlayerServerId(PlayerId())
+    TriggerServerEvent("GangSystem:server:CreateGangGarage", source, name, garageName, GetEntityCoords(PlayerPedId()))
+end, false)
+----------------------COMMANDS--------------------------------
+
+function OpenGarageUI(name,garage, image)
+    if not ui then
+        SendNUIMessage({
+            type = "ShowGarage",
+            name = name,
+            garage = garage,
+            bgImage = image,
+        })
+        SetNuiFocus(true,true)
+        ui = true   
+    end
+end
+
+function SpawnVehicle(model, vehid, location, heading, garage)
+    local coords = vector4(location.x, location.y, location.z, heading)
+    local plate = "AER "..tostring(math.random(1000, 9999))
+    print(garage)
+    print(vehid)
+    DoScreenFadeOut(500)
+    while not IsScreenFadedOut() do
+        Citizen.Wait(0)
+    end
+    QBCore.Functions.TriggerCallback('QBCore:Server:SpawnVehicle', function(netId)
+        local veh = NetToVeh(netId)
+        QBCore.Functions.SetVehicleProperties(veh, gangGarages[garage].vehicles[vehid].props.vehProps)
+        TaskWarpPedIntoVehicle(PlayerPedId(), veh, -1)
+        SetEntityHeading(veh, coords.w)
+        SetVehicleNumberPlateText(veh, plate)
+        SetEntityAsMissionEntity(veh, true, true)
+        SetVehicleEngineOn(veh, true, true,false)
+        exports['LegacyFuel']:SetFuel(veh, gangGarages[garage].vehicles[vehid].props.vehProps.fuelLevel)
+        plate = QBCore.Functions.GetPlate(veh)
+        TriggerEvent("vehiclekeys:client:SetOwner",plate)
+        DoScreenFadeIn(500)
+        uiUnavailable = false    
+    end, model, coords, true)
+    return plate
+end
+
+function SaveVehicle(currentGarage)
+    local veh = GetVehiclePedIsIn(PlayerPedId(), false)
+    local props = QBCore.Functions.GetVehicleProperties(veh)
+    local r,g,b = GetVehicleCustomPrimaryColour(veh)
+    local source = GetPlayerServerId(PlayerId())
+    local plate = props.plate
+    local color = {r = r,g = g,b = b}
+    TriggerServerEvent("GangSystem:server:SaveVehicle", source, props, color, currentGarage.name, gang, plate)
+end
+
+RegisterNetEvent("GangSystem:client:DeleteVehicle")
+AddEventHandler("GangSystem:client:DeleteVehicle", function()
+    local veh = GetVehiclePedIsIn(PlayerPedId(), false)
+    SetEntityAsMissionEntity(veh, true, true)
+    DeleteVehicle(veh)
+end)
+
+---------------------------------------------------------- GARAGES
+---------------------------------------------------------- NECESSARY FOR SCRIPT FUNCTION
+
+----------------------COMMANDS----------------------
+----------------------COMMANDS----------------------
+
+----------------------EVENTS----------------------
 
 RegisterNetEvent("GangSystem:client:InitialiseGangMember")
 AddEventHandler("GangSystem:client:InitialiseGangMember", function()
@@ -183,12 +204,12 @@ AddEventHandler("GangSystem:client:InitialiseGangMember", function()
     TriggerServerEvent("GangSystem:server:GetGang",source)
     Wait(1000)
     if gang ~= nil then
-        TriggerServerEvent("GangSystem:server:GetGangStuff", source, gang)
+        TriggerServerEvent("GangSystem:server:GetGangDetails", source, gang)
     end
 end)
 
-RegisterNetEvent("GangSystem:client:GetGangStuff")
-AddEventHandler("GangSystem:client:GetGangStuff", function(data, playerLicense)
+RegisterNetEvent("GangSystem:client:GetGangDetails")
+AddEventHandler("GangSystem:client:GetGangDetails", function(data, playerLicense)
     gangData = data
     gangCommandCenter = json.decode(gangData.commandCenter)
     gangGarages = json.decode(gangData.garages)
@@ -197,22 +218,6 @@ AddEventHandler("GangSystem:client:GetGangStuff", function(data, playerLicense)
     gangMembers = json.decode(gangData.members)
     gangColor = json.decode(gangData.color)
     license = playerLicense
-   --blips[gang]= {title=gang.." HQ", colour=5, id=378,x= gangLocation.x, y= gangLocation.y, z = gangLocation.z}
-
-   -- for k,v in pairs(activeBlips) do
-   --     RemoveBlip(v)
-   -- end
-   -- for _, info in pairs(blips) do
-   --   info.blip = AddBlipForCoord(info.x, info.y, info.z)
-    --  SetBlipSprite(info.blip, info.id)
-    --  SetBlipDisplay(info.blip, 4)
-    --  SetBlipScale(info.blip, 1.0)
-    --  SetBlipColour(info.blip, info.colour)
-    --  SetBlipAsShortRange(info.blip, true)
-	--  BeginTextCommandSetBlipName("STRING")
-    --  AddTextComponentString(info.title)
-    --  EndTextCommandSetBlipName(info.blip)
-    --end
 end)
 
 RegisterNetEvent('GangSystem:client:RemoveGangMember')
@@ -230,9 +235,121 @@ AddEventHandler("GangSystem:client:GetGang", function(foundGang)
     gang = foundGang
 end)
 
-----------------------------------------------------------Gang
-----------------------------------------------------------Main
+----------------------EVENTS----------------------
 
+----------------------NUI CALLBACKS----------------------
+----------------------NUI CALLBACKS----------------------
+
+---------------------------------------------------------- NECESSARY FOR SCRIPT FUNCTION
+---------------------------------------------------------- MAIN
+
+----------------------METHODS----------------------
+
+function drawText3D(x, y, z, text)
+    SetTextScale(0.5, 0.5)
+    SetTextFont(4)
+    SetTextProportional(false)
+    SetTextColour(gangColor.r or 255, gangColor.g or 255, gangColor.b or 255, 255)
+    SetTextEntry('STRING')
+    SetTextCentre(true)
+    AddTextComponentString(text)
+    SetDrawOrigin(x, y, z, 0)
+    ClearDrawOrigin()
+end
+
+----------------------METHODS----------------------
+
+----------------------EVENTS----------------------
+
+AddEventHandler("QBCore:Client:OnPlayerLoaded", function()
+    Citizen.Wait(100)
+    TriggerEvent("GangSystem:client:InitialiseGangMember")
+end)
+
+AddEventHandler('onResourceStart', function(resourceName)
+    if resourceName == GetCurrentResourceName() then
+        local source = GetPlayerServerId(PlayerId())
+        TriggerServerEvent("GangSystem:server:GetGang",source)
+        Wait(1000)
+        if gang ~= nil then
+            TriggerServerEvent("GangSystem:server:GetGangDetails", source, gang)
+        end
+    end
+end)
+
+----------------------EVENTS----------------------
+
+
+Citizen.CreateThread(function ()
+    local waitTime = 0
+    while true do
+        Wait(waitTime)
+        if gangData == {} or uiUnavailable then
+            waitTime = 2000
+        else
+            local ped = PlayerPedId()
+            local plocation = GetEntityCoords(ped)
+            if gangLocation ~= nil and not ui then
+                if #(plocation - vector3(gangLocation.x, gangLocation.y, gangLocation.z)) <= 50 then
+                    waitTime = 100
+                    for k,v in pairs(gangGarages) do
+                        local distanceGarages  = #(plocation - vector3(v.location.x, v.location.y, v.location.z))
+                        if distanceGarages <= 5 then
+                            waitTime = 1
+                            DrawMarker(36, v.location.x, v.location.y, v.location.z, 0, 0, 0, 0, 0, 0, 1.0, 1.0, 1.0, gangColor.r, gangColor.g, gangColor.b, 200, 0, 0, 0, true)
+                            DrawMarker(27, v.location.x, v.location.y, v.location.z-0.9, 0, 0, 0, 0, 0, 0, 1.0, 1.0, 1.0, gangColor.r, gangColor.g, gangColor.b, 200, 0, 0, 0, true)
+                            if distanceGarages <= 2 then
+                                --drawText3D(v.location.x, v.location.y, v.location.z, "Apasa pe E pentru a deschide garajul: "..v.name)
+                                if IsControlJustPressed(0, 38) then 
+                                    if GetVehiclePedIsIn(ped, false) == 0 then
+                                        local source = GetPlayerServerId(PlayerId())
+                                        TriggerServerEvent("GangSystem:server:GetGangDetails", source, gang)
+                                        Wait(200)
+                                        OpenGarageUI(gang, gangGarages[v.name], gangData.photo_bg)
+                                    else
+                                        SaveVehicle(v)
+                                    end                         
+                                end
+                            end
+                        end
+                    end
+                    for k,v in pairs(gangStorage) do
+                        local distanceStorage  = #(plocation - vector3(v.location.x, v.location.y, v.location.z))
+                        if distanceStorage <= 5 then
+                            waitTime = 1
+                            DrawMarker(36, v.location.x, v.location.y, v.location.z, 0, 0, 0, 0, 0, 0, 1.0, 1.0, 1.0, gangColor.r, gangColor.g, gangColor.b, 200, 0, 0, 0, true)
+                            DrawMarker(27, v.location.x, v.location.y, v.location.z-0.9, 0, 0, 0, 0, 0, 0, 1.0, 1.0, 1.0, gangColor.r, gangColor.g, gangColor.b, 200, 0, 0, 0, true)
+                            if distance <= 2 then
+                                --drawText3D(v.location.x, v.location.y, v.location.z, "Apasa pe E pentru a deschide Storage")
+                                if IsControlJustPressed(0, 38) then
+                                    QBCore.Functions.Notify("Ai intrat in storage factiunii")
+                                end
+                            end
+                        end
+                    end
+                    if gangCommandCenter ~= nil then --and gangMembers[license].rank == "leader" then
+                        local distanceCenter = #(plocation - vector3(gangCommandCenter.x, gangCommandCenter.y, gangCommandCenter.z))
+                        if distanceCenter <= 5 then
+                            waitTime = 1
+                            DrawMarker(31, gangCommandCenter.x, gangCommandCenter.y, gangCommandCenter.z, 0, 0, 0, 0, 0, 0, 1.0, 1.0, 1.0, gangColor.r, gangColor.g, gangColor.b, 200, 0, 0, 0, true)
+                            DrawMarker(27, gangCommandCenter.x, gangCommandCenter.y, gangCommandCenter.z-0.9, 0, 0, 0, 0, 0, 0, 1.0, 1.0, 1.0, gangColor.r, gangColor.g, gangColor.b, 200, 0, 0, 0, true)
+                            if distanceCenter <= 2 then
+                                --drawText3D(gangCommandCenter.x, gangCommandCenter.y, gangCommandCenter.z, "Apasa pe E pentru a deschide Command Center")
+                                if IsControlJustPressed(0, 38) then
+                                    QBCore.Functions.Notify("Ai intrat in commmand factiunii")
+                                end
+                            end
+                        end
+                    end
+                else 
+                    waitTime = 2000
+                end
+            end
+        end
+    end
+end)
+
+----------------------NUI CALLBACKS----------------------
 
 RegisterNUICallback('action', function(data, cb)
     if data.action == 'CloseUI' then  
@@ -252,102 +369,6 @@ RegisterNUICallback('action', function(data, cb)
     end
 end)
 
+----------------------NUI CALLBACKS----------------------
 
-function drawText3D(x, y, z, text)
-    SetTextScale(0.5, 0.5)
-    SetTextFont(4)
-    SetTextProportional(false)
-    SetTextColour(gangColor.r or 255, gangColor.g or 255, gangColor.b or 255, 255)
-    SetTextEntry('STRING')
-    SetTextCentre(true)
-    AddTextComponentString(text)
-    SetDrawOrigin(x, y, z, 0)
-    ClearDrawOrigin()
-end
-
-AddEventHandler("QBCore:Client:OnPlayerLoaded", function()
-    Citizen.Wait(100)
-    TriggerEvent("GangSystem:client:InitialiseGangMember")
-end)
-
-AddEventHandler('onResourceStart', function(resourceName)
-    if resourceName == GetCurrentResourceName() then
-        local source = GetPlayerServerId(PlayerId())
-        TriggerServerEvent("GangSystem:server:GetGang",source)
-        Wait(1000)
-        if gang ~= nil then
-            TriggerServerEvent("GangSystem:server:GetGangStuff", source, gang)
-        end
-    end
-end)
-
-
-Citizen.CreateThread(function ()
-    local waitTime = 0
-    while true do
-        Wait(waitTime)
-            if gangData == {} or uiUnavailable then
-                waitTime = 2000
-            else
-                local ped = PlayerPedId()
-                local plocation = GetEntityCoords(ped)
-                if gangLocation ~= nil and not ui then
-                    if #(plocation - vector3(gangLocation.x, gangLocation.y, gangLocation.z)) <= 50 then
-                        waitTime = 100
-                        for k,v in pairs(gangGarages) do
-                            local distanceGarages  = #(plocation - vector3(v.location.x, v.location.y, v.location.z))
-                            if distanceGarages <= 5 then
-                                waitTime = 1
-                                DrawMarker(36, v.location.x, v.location.y, v.location.z, 0, 0, 0, 0, 0, 0, 1.0, 1.0, 1.0, gangColor.r, gangColor.g, gangColor.b, 200, 0, 0, 0, true)
-                                DrawMarker(27, v.location.x, v.location.y, v.location.z-0.9, 0, 0, 0, 0, 0, 0, 1.0, 1.0, 1.0, gangColor.r, gangColor.g, gangColor.b, 200, 0, 0, 0, true)
-                                if distanceGarages <= 2 then
-                                    --drawText3D(v.location.x, v.location.y, v.location.z, "Apasa pe E pentru a deschide garajul: "..v.name)
-                                    if IsControlJustPressed(0, 38) then 
-                                        if GetVehiclePedIsIn(ped, false) == 0 then
-                                            local source = GetPlayerServerId(PlayerId())
-                                            TriggerServerEvent("GangSystem:server:GetGangStuff", source, gang)
-                                            Wait(200)
-                                            OpenGarageUI(gang, gangGarages[v.name], gangData.photo_bg)
-                                        else
-                                            SaveVehicle(v)
-                                        end                         
-                                    end
-                                end
-                            end
-                        end
-                        for k,v in pairs(gangStorage) do
-                            local distanceStorage  = #(plocation - vector3(v.location.x, v.location.y, v.location.z))
-                            if distanceStorage <= 5 then
-                                waitTime = 1
-                                DrawMarker(36, v.location.x, v.location.y, v.location.z, 0, 0, 0, 0, 0, 0, 1.0, 1.0, 1.0, gangColor.r, gangColor.g, gangColor.b, 200, 0, 0, 0, true)
-                                DrawMarker(27, v.location.x, v.location.y, v.location.z-0.9, 0, 0, 0, 0, 0, 0, 1.0, 1.0, 1.0, gangColor.r, gangColor.g, gangColor.b, 200, 0, 0, 0, true)
-                                if distance <= 2 then
-                                    --drawText3D(v.location.x, v.location.y, v.location.z, "Apasa pe E pentru a deschide Storage")
-                                    if IsControlJustPressed(0, 38) then
-                                        QBCore.Functions.Notify("Ai intrat in storage factiunii")
-                                    end
-                                end
-                            end
-                        end
-                        if gangCommandCenter ~= nil then --and gangMembers[license].rank == "leader" then
-                            local distanceCenter = #(plocation - vector3(gangCommandCenter.x, gangCommandCenter.y, gangCommandCenter.z))
-                            if distanceCenter <= 5 then
-                                waitTime = 1
-                                DrawMarker(31, gangCommandCenter.x, gangCommandCenter.y, gangCommandCenter.z, 0, 0, 0, 0, 0, 0, 1.0, 1.0, 1.0, gangColor.r, gangColor.g, gangColor.b, 200, 0, 0, 0, true)
-                                DrawMarker(27, gangCommandCenter.x, gangCommandCenter.y, gangCommandCenter.z-0.9, 0, 0, 0, 0, 0, 0, 1.0, 1.0, 1.0, gangColor.r, gangColor.g, gangColor.b, 200, 0, 0, 0, true)
-                                if distanceCenter <= 2 then
-                                    --drawText3D(gangCommandCenter.x, gangCommandCenter.y, gangCommandCenter.z, "Apasa pe E pentru a deschide Command Center")
-                                    if IsControlJustPressed(0, 38) then
-                                        QBCore.Functions.Notify("Ai intrat in commmand factiunii")
-                                    end
-                                end
-                            end
-                        end
-                    else 
-                        waitTime = 2000
-                    end
-                end
-            end
-        end
-end)
-----------------------------------------------------------Main
+---------------------------------------------------------- MAIN
